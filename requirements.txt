@@ -1,0 +1,17 @@
+boto3
+botocore
+sagemaker
+pandas
+numpy
+clearml
+matplotlib
+seaborn
+profanity
+beautifulsoup4
+configparser
+scipy
+pyarrow
+transformers
+scikit-learn
+torch
+tensorflow
