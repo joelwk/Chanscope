@@ -16,10 +16,11 @@ def process_data(df, column):
     os.makedirs(save_directory, exist_ok=True)
     # Load all files
     all_files_df = load_all_files(directory)
+    
     # Calculate averages
     average_word_count, average_text_frequency = get_averages(all_files_df)
     categories = {
-        'FnWCn': {'num_min_threshold': round(average_text_frequency), 'num_max_threshold': None, 'wc_min_threshold': 2, 'wc_max_threshold': None},
+        'high_low': {'num_min_threshold': round(average_text_frequency), 'num_max_threshold': None, 'wc_min_threshold': 2, 'wc_max_threshold': None},
         'high_high': {'num_min_threshold': round(average_text_frequency), 'num_max_threshold': None, 'wc_min_threshold': round(average_word_count), 'wc_max_threshold': None},
         'low_low': {'num_min_threshold': 2, 'num_max_threshold': round(average_text_frequency), 'wc_min_threshold': 2, 'wc_max_threshold': round(average_word_count)},
         'low_high': {'num_min_threshold': 2, 'num_max_threshold': None, 'wc_min_threshold': round(average_word_count), 'wc_max_threshold': None},
@@ -123,7 +124,7 @@ def load_all_files(directory_path):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-def FnWCn(df, num_min_threshold=None, num_max_threshold=None, wc_min_threshold=None, wc_max_threshold=None, top_percent=0.05):
+def FnWCn(df, num_min_threshold=None, num_max_threshold=None, wc_min_threshold=None, wc_max_threshold=None, top_percent=0.1):
     """Filter the dataframe based on frequency and word count thresholds and take the top percent of the remaining data"""
     df = df[(df['frequency'] >= num_min_threshold if num_min_threshold is not None else True) &
             (df['frequency'] <= num_max_threshold if num_max_threshold is not None else True) &

@@ -1,137 +1,117 @@
-import html
-import os
-import glob
-import random
-import gzip
-import re
-import boto3
-import pickle
-import io
-from unicodedata import normalize
-import html
-import configparser
 import pandas as pd
-import string
-import numpy as np
-import tensorflow as tf
-
+import random
+import glob
+import boto3
+import os
+import logging
+import csv
+from scipy.stats import ks_2samp
+from matplotlib import pyplot as plt
+from utils.fnProcessing import remove_urls, remove_whitespace, flip_spam_label, clean_text
+import configparser
 config_transformer = configparser.ConfigParser()
-config_transformer.read('./.config.ini')
+config_transformer.read('./config.ini')
 board_info = config_transformer["board_info"]
-source_data_s3 = config_transformer["source_data_s3"]
-s3_bucket_name = source_data_s3['s3_bucket']
-s3_bucket_data = source_data_s3['s3_bucket_data']
-s3_bucket_processed = source_data_s3['s3_bucket_processed']
-processed_data_gz = source_data_s3['processed_data_gz']
-s3_bucket_batchprocessed = source_data_s3['s3_bucket_batchprocessed']
+params = {key: board_info[key] for key in board_info}
+
+def estimate_max_len(text_data):
+    return max(len(s.split()) for s in text_data)
+
+def estimate_vocab_size(text_data):
+    unique_words = set(word for s in text_data for word in s.split())
+    return len(unique_words)
 
 def iter_sample():
     if initial_sample_size - data.shape[0] < len(file_data):
         file_data = pd.DataFrame(reservoir_sampling(file_data.itertuples(index=False), initial_sample_size - data.shape[0]), columns=file_data.columns)
 
 def load_local_csv(input_dir):
-    # Get a list of all CSV files in the input directory
     csv_files = glob.glob(f'{input_dir}/*.csv')
-    # Initialize an empty list to store dataframes
     dataframes = []
-    # Loop through all CSV files and append into one dataframe
     for file in csv_files:
         df = pd.read_csv(file)
         dataframes.append(df)
-    # Concatenate all dataframes into one
     combined_df = pd.concat(dataframes, ignore_index=True)
     return combined_df
 
 def load_local_parq(input_dir):
-    # Get a list of all Parquet files in the input directory
     parquet_files = glob.glob(f'{input_dir}/*.parquet')
-    # Initialize an empty list to store dataframes
+    if not parquet_files:
+        print("No parquet files found in the directory.")
+        return pd.DataFrame()
     dataframes = []
-    # Loop through all Parquet files and append into one dataframe
     for file in parquet_files:
         df = pd.read_parquet(file)
+        for col in df.columns:
+            if pd.api.types.is_period_dtype(df[col]):
+                df[col] = df[col].astype(str)
         dataframes.append(df)
-    # Concatenate all dataframes into one
     combined_df = pd.concat(dataframes, ignore_index=True)
+    if 'thread_id' in combined_df.columns:
+        combined_df['thread_id'] = combined_df['thread_id'].astype(int)
     return combined_df
 
 def save_to_datasets_folder(data, dataset_name):
-    # Save the dataframe to a Parquet file
-    data.to_parquet(f'./.datasets/{dataset_name}.parquet', index=False)
+    data.to_parquet(f'./datasets/{dataset_name}.parquet', index=False)
 
 def save_to_samples_folder(data, dataset_name):
-    # Save the dataframe to a Parquet file
-    data.to_parquet(f'./.samples/{dataset_name}.parquet', index=False)
+    data.to_parquet(f'./samples/{dataset_name}.parquet', index=False)
 
-# Load all samples and delete them afterwards
 def load_and_append_parquets_to_dataset(input_dir, output_dir):
-    # Get a list of all Parquet files in the input directory
     parquet_files = glob.glob(f'{input_dir}*.parquet')
-    # Initialize an empty list to store dataframes
     dataframes = []
-    # Loop through all Parquet files and append into one dataframe
     for file in parquet_files:
         df = pd.read_parquet(file)
         dataframes.append(df)
-        # Delete the file after it has been read and appended
         os.remove(file)
-    # Concatenate all dataframes in the list
     data = pd.concat(dataframes, ignore_index=True)
-    # Determine the next file number
+    data.loc[:, "text_clean"] = data["posted_comment"].apply(clean_text).astype(str)
     existing_files = os.listdir(output_dir)
     existing_numbers = [int(re.search(r'\d+', file).group()) for file in existing_files if re.search(r'\d+', file)]
     next_file_number = max(existing_numbers) + 1 if existing_numbers else 1
-    # Determine min and max date
-    date_min = pd.to_datetime(data['posted_date_time']).min().strftime('%Y-%m-%d_%H-%M-%S')
-    date_max = pd.to_datetime(data['posted_date_time']).max().strftime('%Y-%m-%d_%H-%M-%S')
-    # Determine total rows
+    date_min = pd.to_datetime(data['posted_date_time']).min().strftime('%Y-%m-%d')
+    date_max = pd.to_datetime(data['posted_date_time']).max().strftime('%Y-%m-%d')
     total_rows = data.shape[0]
-    # Construct the output filename
-    output_filename = f'{output_dir}/dataset_{next_file_number}_{date_min}_{date_max}_R{total_rows}.parquet'
-    # Save the dataframe to a new Parquet file in the output directory
+    output_filename = f'dataset_{date_min}_{date_max}_R{total_rows}.parquet'
     data.to_parquet(output_filename, index=False)
 
-def update_file(new_df, existing_df_path, file_type='csv'):
-    # Check if file exists
-  file_exists = os.path.isfile(existing_df_path)
-  if not file_exists:
-    # File doesn't exist, just save new DF
-    save_df(new_df, existing_df_path, file_type)
-  # Read in existing DF
-  df = pd.read_csv(existing_df_path) 
-  # Ensure columns are integers
-  df['thread_id'] = df['thread_id'].astype(int)
-  new_df['thread_id'] = new_df['thread_id'].astype(int)
-  # Concatenate new DataFrame  
-  df = pd.concat([df, new_df], ignore_index=True)
-  # Deduplicate 
-  df.drop_duplicates(subset='thread_id', inplace=True)
-  # Write updated DataFrame
-  df.to_csv(existing_df_path, index=False)
-
-def read_df(path, file_type):
-  if file_type == 'csv':
-    return pd.read_csv(path)
-  elif file_type == 'parquet':
-    return pd.read_parquet(path)
-  else:
-    raise ValueError("Invalid file type")
+def convert_date_columns(df, date_columns):
+    def parsing_dates(text):
+        for fmt in ('%m-%d-%y %H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%m-%d-%y'):
+            try:
+                return pd.to_datetime(text, format=fmt)
+            except ValueError:
+                pass
+        raise ValueError('no valid date format found')
+    for col in date_columns:
+        df[col] = df[col].apply(parsing_dates)
+        df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+    return df
     
-def save_df(df, path, file_type):
-  if file_type == 'csv':
-    df.to_csv(path, index=False)
-  elif file_type == 'parquet':
-    df.to_parquet(path, index=False)
-  else:
-    raise ValueError("Invalid file type")
+def update_file(new_df, existing_df_path, file_type='parquet'):
+    new_df = new_df.copy()
+    file_exists = os.path.isfile(existing_df_path)
+    if not file_exists:
+        save_df(new_df, existing_df_path, file_type)
+    else:
+        df = pd.read_parquet(existing_df_path) 
+        df['thread_id'] = df['thread_id'].astype(int)
+        new_df['thread_id'] = new_df['thread_id'].astype(int)
+        df = pd.concat([df, new_df], ignore_index=True)
+        df.drop_duplicates(subset='thread_id', inplace=True)
+        for col in df.columns:
+            if pd.api.types.is_period_dtype(df[col]):
+                df[col] = df[col].astype(str)
+        date_columns_to_convert = ['posted_date_time', 'collected_date_time']
+        df = convert_date_columns(df, date_columns_to_convert)
+        df.to_parquet(existing_df_path)
 
 def load_files(directory_path, num_min_threshold, num_max_threshold, wc_min_threshold, wc_max_threshold):
     dataframes = []
     for file in os.listdir(directory_path):
-        if file.endswith(".txt"):  # ensures we're working with .txt files
-            # split file name and get the number and wc part
+        if file.endswith(".txt"): 
             number, wc_part = file.split('F')[1].split('WC')
-            wc = wc_part.split('_')[0]  # remove trailing parts after 'WC'
+            wc = wc_part.split('_')[0] 
             if (num_min_threshold < int(number) < num_max_threshold) and (wc_min_threshold < int(wc) < wc_max_threshold):
                 df = pd.read_table(os.path.join(directory_path, file), sep=',').sort_values(by='date')
                 dataframes.append(df)
@@ -140,24 +120,15 @@ def load_files(directory_path, num_min_threshold, num_max_threshold, wc_min_thre
 def load_and_combine_files(directory_path, num_min_threshold=None, num_max_threshold=None, wc_min_threshold=None, wc_max_threshold=None):
     dataframes = []
     for file in os.listdir(directory_path):
-        if file.endswith(".txt"):  # ensures we're working with .txt files
-            # split file name and get the number and wc part
+        if file.endswith(".txt"):  
             number, wc_part = file.split('F')[1].split('WC')
-            wc = wc_part.split('_')[0]  # remove trailing parts after 'WC'
+            wc = wc_part.split('_')[0]
             if ((num_min_threshold is None or int(number) >= num_min_threshold) and 
                 (num_max_threshold is None or int(number) <= num_max_threshold) and 
                 (wc_min_threshold is None or int(wc) >= wc_min_threshold) and 
                 (wc_max_threshold is None or int(wc) <= wc_max_threshold)):
                 df = pd.read_table(os.path.join(directory_path, file), sep=',').sort_values(by='date')
-                df['frequency'] = int(number)  # adding frequency column
+                df['frequency'] = int(number)
                 dataframes.append(df)
     combined_df = pd.concat(dataframes, ignore_index=True)
     return combined_df
-
-# Defining a function that checks a sample of the data and generates a histogram and KDE plot
-def check_sample(data):
-    # Displays the first 2 rows of the DataFrame
-    data.head(2)
-    # Plots a histogram and KDE of the data
-    plot_hist(data)
-    plot_kde(data)
