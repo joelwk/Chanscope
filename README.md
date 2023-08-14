@@ -7,14 +7,14 @@ Before geting into the Project structure and File directories, it's important to
 Project Definitions:
 - **Dialog**: Dialog: The term dialog is used to describe coherent dataframe text. It is a conversation that is logical, consistent, and meaningful. It is not a monologue or a series of unrelated statements. It can contain profanity as long as it is used like any other word would. Belligerent and incoherent profanity is not considered dialog and will not be labeled as dialog.
 
- Examples of rows of qualifying dialog:![Dialog example 1](plots\dialogdata_mainexample_readme.png)
- Examples of rows of qualifying non-dialog: ![Dialog example 2](plots\nondialogdata_mainexample_readme.png)
+ Examples of rows of qualifying dialog:![Dialog example 1](plots/dialogdata_mainexample_readme.png)
+ Examples of rows of qualifying non-dialog: ![Dialog example 2](plots/nondialogdata_mainexample_readme.png)
 
 - **Dialog mapping**:
 The images below represent two comments that have been mapped to eachother using the thread id's found in raw data. This illistrates the dialog that this project is aiming to identify and select for.
 
-Example 1: ![Dialog example 1](plots\dialog_2.png)
-Example 2: ![Dialog example 2](plots\dialog_5.png)
+Example 1: ![Dialog example 1](plots/dialog_2.png)
+Example 2: ![Dialog example 2](plots/dialog_5.png)
 
 
 Methods and Approaches:
@@ -120,7 +120,7 @@ Refer to the notebook results_analysis.ipynb for examples of applications.
 
 Future work involves finalizing the narrative tracking feature and using generative models to create dynamic training datasets. 
 The example below illistrates the function text_generator.generate() completing the text generation.
- ![Dialog example 1](plots\genpreview1.png)
+ ![Dialog example 1](plots/genpreview1.png)
 
 ## References
 - Bird, S., Klein, E., & Loper, E. (2021). Natural Language Processing with Python. In *Natural Language Processing with Python* (3rd ed., ch. 9). O'Reilly Media. Retrieved from https://learning.oreilly.com/library/view/natural-language-processing/9781098136789/ch09.html
