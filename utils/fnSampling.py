@@ -21,7 +21,6 @@ def reservoir_sampling(iterator, k):
     return reservoir
 
 def time_based_sample(data, time_column, freq='H', sample_ratio=None):
-    if sample_ratio is None: raise ValueError("Sample_ratio must be provided.")
     data[time_column] = pd.to_datetime(data[time_column])
     if data.index.name != time_column: data.set_index(time_column, inplace=True)
     data = data.resample(freq).apply(lambda x: x.sample(frac=sample_ratio) if len(x) > 0 else x)
@@ -62,7 +61,8 @@ def count_total_rows(directory):
     print(f'Total number of files processed {files_count} containing: {total_rows} rows')
     return total_rows
 
-def get_sample(directory, sample_ratio):
+def get_new_sample(sample_ratio):
+    directory = '/data_drive/processed/batched/'
     data = sample_directory(directory, 'posted_date_time', 'H', sample_ratio) 
     data["text_clean"] = data["posted_comment"].astype(str).apply(remove_whitespace).apply(remove_urls)
     data = data[data['text_clean'] != ''].dropna(subset=['text_clean']).drop_duplicates(subset=['thread_id'])
@@ -75,3 +75,24 @@ def get_sample(directory, sample_ratio):
     data['thread_id'] = data['thread_id'].astype('int')
     data['YearMonth'] = data['YearMonth'].astype(str)
     return data
+
+def get_processed_sample(directory, num_files=1):
+    # Get a list of all parquet files in the directory
+    all_files = [f for f in os.listdir(directory) if f.endswith('.parquet')]
+    # Randomly select one of the sampled datasets
+    selected_files = random.sample(all_files, num_files)
+    sampled_data = pd.DataFrame()
+    for file_name in selected_files:
+        file_path = os.path.join(directory, file_name)
+        data = pd.read_parquet(file_path)
+        sampled_data = pd.concat([sampled_data, data])
+    # Continue with your existing processing code
+    sampled_data["text_clean"] = sampled_data["posted_comment"].astype(str).apply(remove_whitespace).apply(remove_urls)
+    sampled_data = sampled_data[sampled_data['text_clean'] != ''].dropna(subset=['text_clean']).drop_duplicates(subset=['thread_id'])
+    sampled_data = sampled_data.drop_duplicates(subset=['thread_id'])
+    sampled_data['thread_id'] = pd.to_numeric(sampled_data['thread_id'], errors='coerce')
+    sampled_data = sampled_data.dropna(subset=['thread_id'])
+    sampled_data['thread_id'] = sampled_data['thread_id'].astype('int')
+    sampled_data['YearMonth'] = sampled_data['YearMonth'].astype(str)
+    return sampled_data
+

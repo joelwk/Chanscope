@@ -1,6 +1,10 @@
 from sklearn.model_selection import ParameterGrid, train_test_split
 from srcs.labeler import DialogDetector, apply_detector
 from imblearn.over_sampling import RandomOverSampler
+from utils import fnTesting, fnPlots
+from kneed import KneeLocator
+import matplotlib.pyplot as plt
+
 import os
 import pandas as pd
 
@@ -41,3 +45,25 @@ def grid_search(data, param_grid):
         result['labeled_data'] = labeled_data
         results.append(result)
     return results
+
+def evaluate_spam_threshold(data, param_grid):
+    # Perform grid search on the data using the specified parameters
+    results = fnTesting.grid_search(data, param_grid)
+    summary_table = fnPlots.create_summary_table(results)
+
+    # Plot the proportion of spam against similarity threshold using matplotlib
+    plt.plot(summary_table['similarity_threshold'], summary_table['spam_ratio'], marker='o')
+    plt.xlabel('Threshold')
+    plt.ylabel('Proportion of Spam')
+    plt.title('Spam Proportion vs Threshold')
+
+    # Find the knee/elbow in the curve using the KneeLocator library
+    kneedle = KneeLocator(summary_table['similarity_threshold'], summary_table['spam_ratio'], curve='convex', direction='decreasing')
+    plt.vlines(kneedle.knee, plt.ylim()[0], plt.ylim()[1], linestyles='dashed')
+    plt.show()
+
+    # Print the optimal threshold for a significant drop-off, based on the analysis
+    optimal_threshold = kneedle.knee
+    print(f"Optimal threshold for significant drop-off: {optimal_threshold}")
+    
+    return optimal_threshold, results ,summary_table

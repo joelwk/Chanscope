@@ -65,3 +65,50 @@ def flip_spam_label(df, thread_ids):
         current_label = df.loc[idx, 'spam_label'].values[0]
         new_label = 'SPAM' if current_label == 'NOT_SPAM' else 'NOT_SPAM'
         df.loc[idx, 'spam_label'] = new_label
+
+def find_dialogs(data):
+    pattern = re.compile(r'&gt;&gt;\d+')
+    to_from = []
+    for index, row in data.iterrows():
+        thread_id = int(row['thread_id'])
+        posted_comment = row['posted_comment']
+        references = pattern.findall(posted_comment)
+        for reference in references:
+            ref_id = int(reference.replace('&gt;&gt;', ''))
+            if ref_id != thread_id:
+                to_from.append((ref_id, thread_id))
+    dialog_df = pd.DataFrame(to_from, columns=['from', 'to'], dtype='int64')
+    return dialog_df
+    
+def augment_dialogs(replies, original_data):
+    replies['is_original'] = False
+    replies['comment'] = None
+    replies['response_comment'] = None
+    replies['comment_posted_date_time'] = None
+    replies['response_posted_date_time'] = None
+
+    # Dictionary to store original comments by thread ID
+    original_comments = {}
+    original_date_times = {}
+
+    # Iterate through the replies dataframe
+    for index, row in replies.iterrows():
+        from_thread = int(row['from'])
+        to_thread = int(row['to'])
+        # Find the original comment for this thread if it hasn't been found yet
+        if from_thread not in original_comments:
+            original_post = original_data[original_data['thread_id'] == from_thread]
+            if not original_post.empty:
+                original_comments[from_thread] = original_post.iloc[0]['text_clean']
+                original_date_times[from_thread] = original_post.iloc[0]['posted_date_time']
+                replies.at[index, 'is_original'] = True
+
+        replies.at[index, 'comment'] = original_comments.get(from_thread)
+        replies.at[index, 'comment_posted_date_time'] = original_date_times.get(from_thread)
+
+        # Find the response comment
+        response_post = original_data[original_data['thread_id'] == to_thread]
+        if not response_post.empty:
+            replies.at[index, 'response_comment'] = response_post.iloc[0]['text_clean']
+            replies.at[index, 'response_posted_date_time'] = response_post.iloc[0]['posted_date_time']
+    return replies
