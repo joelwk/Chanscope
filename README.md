@@ -7,15 +7,14 @@ Before getting into the Project structure and File directories, it is crucial to
 Project Definitions:
 - **Dialog**: The term dialog describes coherent text. It is a conversation that is logical, consistent, and meaningful. It is not a monologue or a series of unrelated statements. It can contain profanity as long as it is used like any other word. Belligerent and incoherent profanity is not considered dialog and will not be labeled as dialog.
 
- Examples of rows of qualifying dialog:![Dialog example 1](plots\dialogdata_mainexample_readme.png)
- Examples of rows of qualifying non-dialog: ![Dialog example 2](plots\nondialogdata_mainexample_readme.png)
+ Examples of rows of qualifying dialog:![Dialog example 1](plots/dialogdata_mainexample_readme.png)
+ Examples of rows of qualifying non-dialog: ![Dialog example 2](plots/nondialogdata_mainexample_readme.png)
 
 - **Dialog mapping**:
 The images below represent two comments mapped to each other using the thread IDs found in the raw data, illustrating the dialog this project aims to identify and select.
 
-Example 1: ![Dialog example 1](plots\dialog_2.png)
-Example 2: ![Dialog example 2](plots\dialog_5.png)
-
+Example 1: ![Dialog example 1](plots/dialog_2.png)
+Example 2: ![Dialog example 2](plots/dialog_5.png)
 
 Methods and Approaches:
 - **Custom Attention Filtering**: This approach leverages BERT's attention mechanisms to extract a five-number summary from the attention values of text documents (where a "document" refers to a single dataframe row, representing the tokenized text of that row). Using KMeans clustering and PCA, the code tokenizes and embeds text with BERT and then processes the attention values to identify key statistics for each attention head. This is followed by clustering the documents and visualizing them in a two-dimensional PCA plot. The function `document_embedding_Five_Number_Summary` extracts the five-number summary from attention values and utilizes a recursive function `flatten` to handle nested lists. The resulting clusters are labeled and can be analyzed to understand their dialog or non-dialog nature, allowing for insights into document categorization.
@@ -120,7 +119,7 @@ Refer to the notebook results_analysis.ipynb for examples of applications.
 
 Future work involves finalizing the narrative tracking feature and using generative models to create dynamic training datasets. 
 The example below illustrates the function text_generator.generate(), completing the text generation.
- ![Dialog example 1](plots\genpreview1.png)
+ ![Dialog example 1](plots/genpreview1.png)
 
 ## References
 - Bird, S., Klein, E., & Loper, E. (2021). Natural Language Processing with Python. In *Natural Language Processing with Python* (3rd ed., ch. 9). O'Reilly Media. Retrieved from https://learning.oreilly.com/library/view/natural-language-processing/9781098136789/ch09.html
