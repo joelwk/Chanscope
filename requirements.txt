@@ -3,7 +3,6 @@ botocore
 sagemaker
 pandas
 numpy
-clearml
 matplotlib
 seaborn
 profanity
@@ -15,3 +14,9 @@ transformers
 scikit-learn
 torch
 tensorflow
+newspaper3k
+pytrends
+googlesearch-python
+statsmodels
+kneed
+imblearn
