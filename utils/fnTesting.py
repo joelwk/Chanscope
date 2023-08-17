@@ -1,6 +1,8 @@
 from sklearn.model_selection import ParameterGrid, train_test_split
 from srcs.labeler import DialogDetector, apply_detector
 from imblearn.over_sampling import RandomOverSampler
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
 from utils import fnTesting, fnPlots
 from kneed import KneeLocator
 import matplotlib.pyplot as plt
@@ -67,3 +69,26 @@ def evaluate_spam_threshold(data, param_grid):
     print(f"Optimal threshold for significant drop-off: {optimal_threshold}")
     
     return optimal_threshold, results ,summary_table
+
+def test_roc(data):
+    # Assuming spam_label_source is numerical
+    X = data[['spam_label_source']].values
+    # If spam_label is categorical, you may need to encode it
+    le = LabelEncoder()
+    y = le.fit_transform(data['spam_label'])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    clf = RandomForestClassifier(random_state=42)
+    clf.fit(X_train, y_train)
+    y_pred_proba = clf.predict_proba(X_test)[:, 1]
+    # Calculate ROC AUC score
+    roc_auc = roc_auc_score(y_test, y_pred_proba)
+    print(f"ROC AUC Score for Classifier: {roc_auc}")
+    # Plot ROC curve
+    fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+    plt.plot(fpr, tpr, label=f'Classifier (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], 'k--', label='Baseline (AUC = 0.50)')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Baseline ROC Curve')
+    plt.legend(loc="lower right")
+    plt.show()
