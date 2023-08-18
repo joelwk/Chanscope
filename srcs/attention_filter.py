@@ -60,7 +60,7 @@ def document_embedding_Five_Number_Summary(text, max_length):
         # Add the five-number summary to the result
         result.extend([min_val, q1, median, q3, max_val])
 
-    # Pad the result with zeros to match max_length (ensures consistent length across documents)
+    # Pad the result with zeros to match max_length (ensures consistent length across text)
     padded_result = result + [0] * (max_length - len(result))
     return padded_result
 
@@ -74,9 +74,6 @@ def main_plotting(data, max_length=512, show_scatter=False):
     kmeans = KMeans(n_clusters=opt, random_state=42, n_init=10).fit(X)
     data['cluster'] = kmeans.labels_
     cluster_junk_ratio = data.groupby('cluster')['spam_label'].mean()
-    
-    if show_scatter == False:
-        return data, cluster_junk_ratio
 
     print(cluster_junk_ratio)
     pca = PCA(n_components=2)
@@ -90,23 +87,46 @@ def main_plotting(data, max_length=512, show_scatter=False):
     cmap = plt.get_cmap('viridis')
     colors = [cmap(i) for i in np.linspace(0, 1, len(sorted_clusters))]
     
+    legend_handles = {}  # Keep track of legend handles
     for idx, cluster in enumerate(sorted_clusters):
         cluster_data = data[data['cluster'] == cluster]
+        spam_ratio = cluster_junk_ratio.loc[cluster]
         for is_spam in cluster_data['spam_label'].unique():
             subset = cluster_data[cluster_data['spam_label'] == is_spam]
-            label = f"Cluster {cluster} - {'Spam' if is_spam else 'Not Spam'}"
-            ax.scatter(subset['pca-one'], subset['pca-two'], color=colors[idx], label=label, alpha=0.7 if is_spam else 1)
-        
+            label = f"Cluster {cluster} {'SPAM' if is_spam else 'NOT_SPAM'}"
+            alpha_value = 0.5 if is_spam else 1
+            scatter = ax.scatter(subset['pca-one'], subset['pca-two'], color=colors[idx], label=label, alpha=alpha_value)
+            if label not in legend_handles:
+                legend_handles[label] = scatter
+
         # Plot cluster centroids
         ax.scatter(centroids_pca[idx, 0], centroids_pca[idx, 1], marker='x', color='red')
-        
-        # Annotate with junk ratio
-        ax.annotate(f"Junk Ratio: {cluster_junk_ratio.loc[cluster]:.2f}",
-                    (centroids_pca[idx, 0], centroids_pca[idx, 1]), fontsize=5, color='black')
 
-    ax.set_title('Clusters after PCA transformation') # Use ax for setting title
-    handles, labels = ax.get_legend_handles_labels() # Get legend handles and labels from ax
+        # Only annotate with SPAM ratio if the ratio is above 0
+        # Within the cluster function and the loop over sorted_clusters
+        if spam_ratio > 0:
+            # Compute the x and y offsets for annotation
+            xy_offset_x = idx * 2
+            xy_offset_y = idx * 2
+            
+            # Check if the centroid is close to the boundaries, adjust the xytext accordingly
+            if centroids_pca[idx, 0] < np.min(pca_result[:, 0]) + 0.1 * (np.max(pca_result[:, 0]) - np.min(pca_result[:, 0])):
+                xy_offset_x = -xy_offset_x
+            if centroids_pca[idx, 1] < np.min(pca_result[:, 1]) + 0.1 * (np.max(pca_result[:, 1]) - np.min(pca_result[:, 1])):
+                xy_offset_y = -xy_offset_y
+            ax.annotate(f"Cluster {cluster} Spam Ratio: {spam_ratio:.2f}",
+                        xy=(centroids_pca[idx, 0], centroids_pca[idx, 1]),
+                        xytext=(xy_offset_x, xy_offset_y),  # Adjusting both x and y offsets
+                        textcoords="offset points",
+                        fontsize=10, color='black',
+                        ha='center', va='bottom',
+                        arrowprops=dict(facecolor='black', shrink=0.1),
+                        bbox=dict(boxstyle="round,pad=0.3", edgecolor="none", facecolor=(1, 1, 1, 0.8))) # Transparent white background
+
+    ax.set_title('Attention Clusters containing > 0.01 SPAM after PCA')
+    handles, labels = ax.get_legend_handles_labels()
     sorted_legend = sorted(zip(labels, handles), key=lambda x: int(x[0].split(" ")[1]))
-    ax.legend([handle for label, handle in sorted_legend],
-            [label for label, handle in sorted_legend]) # Use ax for legend
+    ax.legend(legend_handles.values(), legend_handles.keys())
+    if show_scatter:
+            plt.show()
     return fig, cluster_junk_ratio, data

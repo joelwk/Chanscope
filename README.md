@@ -22,7 +22,15 @@ Before getting into the Project structure and File directories, it is crucial to
         
     - Example 2:
     
-        ![Dialog example 2](plots/dialog_5.png)
+        ![Dialog example 2](plots/dialog_6.png)
+
+    - Example 3:
+    
+        ![Dialog example 3](plots/dialog_9.png)
+
+    - Example 4:
+    
+        ![Dialog example 4](plots/dialog_10.png)
 
 ### Methods and Approaches:
 - **Custom Attention Filtering**: This approach leverages BERT's attention mechanisms to extract a five-number summary from the attention values of text documents (where a "document" refers to a single dataframe row, representing the tokenized text of that row). Using KMeans clustering and PCA, the code tokenizes and embeds text with BERT and then processes the attention values to identify key statistics for each attention head. This is followed by clustering the documents and visualizing them in a two-dimensional PCA plot. The function `document_embedding_Five_Number_Summary` extracts the five-number summary from attention values and utilizes a recursive function `flatten` to handle nested lists. The resulting clusters are labeled and can be analyzed to understand their dialog or non-dialog nature, allowing for insights into document categorization (Vaswani et al., 2017).
@@ -34,23 +42,17 @@ Before getting into the Project structure and File directories, it is crucial to
 - **Time-Stratified Random Sampling**: A specific sampling technique used to ensure the quality and robustness of the data, enabling the model to better understand the text's nuances and underlying patterns (Almeida & Hidalgo, 2012).
 
 ## Data Directory (`data/`)
-- Relevant data files such as training, baselines, or log files.
-	- `datasets/`
-        - `baselines/`
-        - `TRS/`
-    - `samples/`
-    - `supporting/`
-    - `tests/`
-
-## Models Directory (`models/`)
-- Trained models and related files.
+- Relevant data files such as baselines (training datasets), and Time-Stratified Random Samples (TSRS) used for training and testing.
+	- `baselines/`
+    - `TSRS/`
 
 ## Notebooks (`notebooks/`)
 - Jupyter notebooks for exploratory analysis, sampling, thresholds and performance evaluations. 
     - `SPT.ipynb`
     - `performance_evaluations.ipynb`
     - `classification_pipeline.ipynb`
-
+    - `classification_baseline.ipynb`
+    
 ## Plots (`plots/`)
 - EDA and performance analysis plots.
 
@@ -84,11 +86,11 @@ The data directory includes the following subdirectories with the associated des
     - `baselines/`: Directory containing the original dataset `dialog_dataset.py` and baseline datasets used in performance evaluations.
     - `TSRS/`: Directory containing `Time Stratified Random Samples` that is the data used during development that was sampled from the primary data source
 
-## Models Directory (models)
-Includes best-performing model and related files
-
 ## Notebooks (notebooks)
 The notebooks in this directory provide visualizations and results analysis. The primary notebook is `SPT.ipynb` (Samples, Proportions, and Thresholds), which contains the process used to obtain appropriate samples, proportions, and thresholds used throughout. The `performance_evaluations.ipynb` notebook provides the final performance against various baselines.
+
+## Source files (srcs)
+Contains the main source code files for the project. Summarize each main file below, discussing the methods and intended outcome. 
 
 - `labeler.py` contains the core logic for detecting and labeling dialog in the dataset. It introduces the `DialogDetector` class, which includes various methods to identify dialogs, such as pattern recognition, cosine similarity computations (against training data and `FnWCn logs`), profanity checks, and length thresholds.
 - `FnWCn.py` (Frequency number Word Count number) contains the code for the frequency logging process, dealing with logging high-frequency rows. It works based on dynamically set frequency and word count thresholds, either updating existing files or creating new ones, depending on the specific frequency threshold and word count combination.
@@ -119,7 +121,7 @@ The notebooks in this directory provide visualizations and results analysis. The
         - Creates the directory if it doesn't exist.
     2. **Data Saving (`save_data` function):**
         - Saves data to Parquet files.
-    3. **Data Loading and Splitting with Random Over Sampler (ROS) (`load_and_split_data_smote` function):**
+    3. **Data Loading and Splitting with Random Over Sampler (ROS) (`load_and_split_data_ROS` function):**
         - Loads and splits the data into training, validation, and testing sets.
         - Applies Random Over Sampler (ROS) to handle class imbalance in the training data.
             - Identifies the minority class that has fewer instances.
@@ -157,6 +159,13 @@ The files in this directory are commonly found in ML projects. However, the `con
 - [Dialog 2](/plots/dialog_2.png)
 - [Dialog 3](/plots/dialog_3.png)
 - [Dialog 4](/plots/dialog_4.png)
+- [Dialog 5](/plots/dialog_5.png)
+- [Dialog 6](/plots/dialog_6.png)
+- [Dialog 7](/plots/dialog_7.png)
+- [Dialog 8](/plots/dialog_8.png)
+- [Dialog 9](/plots/dialog_9.png)
+- [Dialog 10](/plots/dialog_10.png)
+- [Dialog 11](/plots/dialog_11.png)
 
 ## Configuration and Setup (config.ini)
 Details on how to use `Config.ini`, `Dockerfile`, and `Requirements.txt` for configuring and setting up the project environment.

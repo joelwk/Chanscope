@@ -12,7 +12,7 @@ def save_data(df, output_folder, filename):
     file_path = os.path.join(output_folder, filename)
     df.to_parquet(file_path)
 
-def load_and_split_data_smote(data_input, category_column, output_folder):
+def load_and_split_data_ROS(data_input, category_column, output_folder):
     # Assuming data_input is a DataFrame
     X = data_input.drop(columns=[category_column])
     y = data_input[category_column]

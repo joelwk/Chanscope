@@ -124,19 +124,20 @@ class FrequencyLoggerPlotter:
         ax.set_zlabel('Number of High-Frequency Rows')
         plt.title('3D Scatter Plot of Frequency and Word Count Thresholds')
         plt.show()
-        
+
 def create_summary_table(results):
     summary_data = []
     for res in results:
         summary_row = res.copy()
-        summary_row['spam_ratio'] = summary_row['spam_ratio']['SPAM'] # Assuming spam_ratio is a dictionary
+        summary_row['spam_ratio'] = summary_row['spam_ratio'].get(1, 0)  # Get the ratio for spam_label == 1, default to 0 if not found
         summary_data.append(summary_row)
 
     summary_df = pd.DataFrame(summary_data)
     summary_df.drop(columns='labeled_data', inplace=True)
     return summary_df
 
-custom_palette = {'SPAM': 'green', 'NOT_SPAM': 'blue','UNASSIGNED':'yellow','ERROR':'red'}
+custom_palette = {0: 'green', 1: 'blue'}
+
 def plot_histograms(summary_table):
     num_results = len(summary_table)
     fig, axes = plt.subplots(3, num_results, figsize=(16, 8))
@@ -162,6 +163,7 @@ def plot_histograms(summary_table):
 
     plt.tight_layout()
     plt.show()
+
 
 def plot_scatter_charts(summary_table):
     fig, axes = plt.subplots(1, len(summary_table), figsize=(12, 5))

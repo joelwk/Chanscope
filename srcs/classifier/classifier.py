@@ -69,7 +69,6 @@ def load_and_process_data(split_data, split_list=['train', 'val', 'test']):
 
 def create_model(input_shape, layers, dropout, batch_normalization, l1_reg, l2_reg):
     initializer = tf.keras.initializers.GlorotUniform(seed=42)
-
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Dense(layers[0], activation='relu', input_shape=input_shape,
                                      kernel_regularizer=tf.keras.regularizers.l1_l2(l1=l1_reg, l2=l2_reg)))
@@ -88,7 +87,6 @@ def train_model(train_data, train_labels, val_data, val_labels, params):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     # Define the model save path with .keras extension
-    
     model_save_path = os.path.join(save_dir, 'best_model.tf')
     # Train the model
     model = create_model((train_data.shape[1],), params['layers'], params['dropout'], params['batch_normalization'],

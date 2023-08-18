@@ -86,9 +86,9 @@ class DialogDetector:
         similarity_with_not_spam = self.cosine_similarity(text_vector, avg_not_spam_vector)
 
         if similarity_with_spam > self.similarity_threshold:
-            return "SPAM"
+            return 1
         elif similarity_with_not_spam > self.similarity_threshold:
-            return "NOT_SPAM"
+            return 0
         else:
             return ""
 
@@ -97,27 +97,27 @@ class DialogDetector:
         # and the reference vector is above a threshold, the text is considered relevant (not spam).
         # If the similarity is below the threshold, the text is considered spam.
         if enable_dialog_comment_check and self.is_dialog_comment(posted_comment, thread_id):
-            return "NOT_SPAM"
+            return 0
         text = text.lower()
         text = self.check_profanity(text, thread_id)
         if text.startswith("Profane threshold reached"):
             return text
         if any(pattern.search(text) for pattern in self.patterns.values()):
             self.spam_counts["regex_patterns"] += 1
-            return "SPAM"
+            return 1
         if self.has_extra_letters(text):
             self.spam_counts["extra_letters"] += 1
-            return "SPAM"  
+            return 1  
         if self.Is_FnWC(text):
             self.spam_counts["FnWC"] += 1
-            return "SPAM"
+            return 1
         if self.is_short_text(text):
             self.spam_counts["short_text"] += 1
-            return "SPAM"
+            return 1
         label_based_on_similarity = self.is_similar(text, avg_spam_vector, avg_not_spam_vector)
-        if label_based_on_similarity == "SPAM":
+        if label_based_on_similarity == 1:
             self.spam_counts["similar_to_spam"] += 1
-        elif label_based_on_similarity == "NOT_SPAM":
+        elif label_based_on_similarity == 0:
             self.spam_counts["similar_to_not_spam"] += 1
         else:
             self.spam_counts["not_similar_to_either"] += 1
@@ -134,9 +134,9 @@ def apply_detector(data, similarity_threshold, sample_size = None,
             thread_id = row['thread_id']
             result = detector.label_spam(text, thread_id, avg_spam_vector, avg_not_spam_vector, posted_comment, enable_dialog_comment_check)
             row['is_dialog'] = detector.is_dialog_comment(posted_comment, thread_id) 
-            if result.startswith("Profane threshold reached"):
+            if isinstance(result, str) and result.startswith("Profane threshold reached"):
                 row['text_clean'] = result
-                row['spam_label'] = "NOT_SPAM"
+                row['spam_label'] = 0
             else:
                 row['spam_label'] = result
         except Exception as e:
@@ -166,13 +166,13 @@ def apply_detector(data, similarity_threshold, sample_size = None,
     final_top_df = pd.read_csv(os.path.join(top_text_column, 'final_top.txt'))
 
     # Separate the dataset into SPAM and NOT_SPAM based on spam_label
-    spam_set = spam_dataset_df[spam_dataset_df['spam_label'] == 'SPAM']['text_clean']
-    not_spam_set = spam_dataset_df[spam_dataset_df['spam_label'] == 'NOT_SPAM']['text_clean']
+    spam_set = spam_dataset_df[spam_dataset_df['spam_label'] == 1]['text_clean']
+    not_spam_set = spam_dataset_df[spam_dataset_df['spam_label'] == 0]['text_clean']
 
     top_freq = final_top_df['text_clean'].drop_duplicates()
     top_freq_df = pd.DataFrame({
         'text_clean': final_top_df['text_clean'].drop_duplicates(),
-        'label': 'SPAM'
+        'label': 1
     })
 
     # Compute document embeddings for SPAM texts and NOT_SPAM texts
@@ -188,7 +188,6 @@ def apply_detector(data, similarity_threshold, sample_size = None,
 
     # Calculate the ratio of SPAM to total in the labeled data
     spam_ratio = get_spam_ratio(labeled_data, 'spam_label')
-    labeled_data['spam_label'] = labeled_data['spam_label'].apply(lambda x: 1 if x == 'SPAM' else 0)
     similarity_training_data = labeled_data.copy()
     similarity_training_data = similarity_training_data[similarity_training_data['spam_label'] != '']
     return spam_ratio, labeled_data, similarity_training_data, spam_detector

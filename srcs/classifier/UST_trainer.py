@@ -14,7 +14,7 @@ def self_train(train_data, train_labels, val_data, val_labels, unlabeled_data, p
         unlabeled_data = unlabeled_data.batch(10) 
         return unlabeled_data, max_length
 
-    # Define a function to reset the weights of the model
+    # Reset the weights of the model
     def reset_weights(model):
         for layer in model.layers:
             if isinstance(layer, tf.keras.Model):
@@ -51,6 +51,7 @@ def self_train(train_data, train_labels, val_data, val_labels, unlabeled_data, p
             student_model = tf.keras.models.load_model(os.path.join(save_dir, 'best_model.tf'))
         elif iteration > 0:
             reset_weights(student_model)
+            
         # Step 2: Shuffle the training data (outside the if condition)
         indices = np.arange(train_data.shape[0])
         np.random.shuffle(indices)
