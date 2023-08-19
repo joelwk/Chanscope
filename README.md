@@ -6,11 +6,11 @@ Before getting into the Project structure and File directories, it is crucial to
 
 ### Project Definitions Examples:
 - **Dialog**: The term dialog describes coherent text. It is a conversation that is logical, consistent, and meaningful. It is not a monologue or a series of unrelated statements. It can contain profanity as long as it is used like any other word. Belligerent and incoherent profanity is not considered dialog and will not be labeled as dialog.
-    - Examples of rows of qualifying dialog:
+    - Examples of rows of qualifying dialog rows:
     
         ![Dialog example 1](plots/dialogdata_mainexample_readme.png)
         
-    - Examples of rows of qualifying non-dialog:
+    - Examples of rows of qualifying non-dialog rows:
     
         ![Dialog example 2](plots/nondialogdata_mainexample_readme.png)
 
@@ -37,18 +37,17 @@ Before getting into the Project structure and File directories, it is crucial to
 
 - **UST (Unsupervised and Semi-Supervised Training) with Self-Training Process**: Incorporates a specialized self-training process, leveraging both unsupervised and semi-supervised learning methods. The iterative UST approach leverages labeled, unlabeled, and validation data. Through a teacher-student paradigm, the student model learns from pseudo-labels generated from high-confidence predictions, while the teacher model guides the learning process. The model continually refines its understanding and enhances its adaptability, responding to changes in the underlying data characteristics (Longpre et al., 2023).
 
-- **FnWC (Frequency number Word Count number) Method**: This Method is applied at various stages of the pipeline. In step 1, FnWC is used for similarity matching, identifying patterns based on frequency and word count, and aligning them with corresponding data clusters. As the data changes, the Method dynamically adjusts, enabling efficient clustering and adaptation to evolving data trends. It plays a vital role in pattern recognition and clustering within the dataset.
+- **FnWC (Frequency Number Word Count Number) Method**: In step 1, FnWC is used for similarity matching, identifying patterns based on frequency and word count, and aligning them with corresponding data clusters. As the data changes, the method dynamically adjusts, enabling efficient clustering and adaptation to evolving data trends. It plays a vital role in pattern recognition and clustering within the dataset.
 
 - **Time-Stratified Random Sampling**: A specific sampling technique used to ensure the quality and robustness of the data, enabling the model to better understand the text's nuances and underlying patterns (Almeida & Hidalgo, 2012).
 
 ## Data Directory (`data/`)
-- Relevant data files such as baselines (training datasets), and Time-Stratified Random Samples (TSRS) used for training and testing.
-- `datasets/`: Directory containing the datasets used for training and testing.
-    - `baselines/`: Directory containing the original dataset `dialog_dataset.py` and baseline datasets used in performance evaluations.
-    - `TSRS/`: Directory containing `Time Stratified Random Samples` that is the data used during development that was sampled from the primary data source
+Relevant data files such as baselines (training datasets), and Time-Stratified Random Samples (TSRS) used for training and testing.
+- `baselines/`: Directory containing the original training and baseline dataset splits used in training and testing.
+- `TSRS/`: Directory containing `Time Stratified Random Samples` that is the data used during development that was sampled from the primary data source
 
 ## Notebooks (`notebooks/`)
-The notebooks in this directory provide visualizations and results analysis. The primary notebook is `SPT.ipynb` (Samples, Proportions, and Thresholds), which contains the process used to obtain appropriate samples, proportions, and thresholds used throughout. The `performance_evaluations.ipynb` and `performance_baselines_.ipynb` notebooks provide the final performance against various baselines.
+The notebooks in this directory provide visualizations and results analysis. The primary notebook is `SPT.ipynb` (Samples, Proportions, and Thresholds), which contains the process used to obtain appropriate samples, proportions, and identifying thresholds used throughout. The `performance_evaluations.ipynb` and `performance_baselines_.ipynb` notebooks provide the final performance evaluationss.
 
 ## Source files (`srcs/`)
 Contains the main source code files for the project. Summarize each main file below, discussing the methods and intended outcome. 
@@ -93,13 +92,13 @@ Contains the main source code files for the project. Summarize each main file be
 
 ## Utils (`utils/`)
 The files in this directory are commonly found in ML projects. However, the `contraction_mapping.json` file is a distinctive feature which maps contractions to their expanded forms. This serves as a reference file for punctuated text, allowing for its transformation without significant loss of meaning. Additionally, the `fnSampling.py` file is noteworthy as it contains time-stratified random sampling functions essential for providing high-quality and robust data (Almeida & Hidalgo, 2012).
-- `fnPlots` contains various plotting and visualization functions related to date and frequency analysis. It includes functions for plotting histograms, scatter charts, and 3D scatter charts, as well as a class for logging and plotting frequency distributions.
-    1. **Frequency Analysis Class**:
+- `fnPlots.py` contains various plotting and visualization functions related to date and frequency analysis. It includes functions for plotting histograms, scatter charts, and 3D scatter charts, as well as a class for logging and plotting frequency distributions.
     - `FrequencyLoggerPlotter`: A class for logging and plotting frequency distributions. It includes methods for frequency logging, plotting threshold distributions, and 3D scatter plots of frequency and word count thresholds. 
-- `fnProcessing` functions for text processing and dialog extraction
-    - **`remove_profanity` Function**: Replaces words identified as profanity with asterisks, maintaining the original word length.
-    - **`find_dialogs` Function**: Utilizes regular expressions to identify dialog patterns within the data, returning a DataFrame containing 'from' and 'to' thread IDs representing dialog connections.
-    - **`augment_dialogs` Function**: Augments dialog data by adding additional information such as original comments, response comments, and corresponding timestamps. It iterates through the replies DataFrame, finding original and response comments, and populating the DataFrame with this information.
+
+- `fnProcessing.py` functions for text processing and dialog extraction
+    - **`remove_profanity` (function):** Replaces words identified as profanity with asterisks, maintaining the original word length.
+    - **`find_dialogs` (function):**  Utilizes regular expressions to identify dialog patterns within the data, returning a DataFrame containing 'from' and 'to' thread IDs representing dialog connections.
+    - **`augment_dialogs`(function):**  Augments dialog data by adding additional information such as original comments, response comments, and corresponding timestamps. It iterates through the replies DataFrame, finding original and response comments, and populating the DataFrame with this information.
 
 ## Plots (`plots/`)
 #### Distributions and samples:
@@ -111,7 +110,7 @@ The files in this directory are commonly found in ML projects. However, the `con
 - [Attention Clusters](/plots/attention_clusters_A05P8E01_1000ksampled.png)
 - [Top 1% frequent posts visualized with FrequencyLoggerPlotter](/plots/3dFnWCn_top0.01_F5WC1step4.png)
 
-#### Quantative benchmarks:
+#### Quantitative benchmarks:
 - [Optimal threshold at Alpha 0.05, Power 0.8, Effect 0.01](/plots/optimal_threshold_sr0.03544_A05P8E01_3.png)
 - [Spam ratio at Alpha 0.05, Power 0.8, Effect 0.01](/plots/spam_ratio_sr0.03544_A05P8E01_3.png)
 
@@ -161,3 +160,4 @@ These advancements aim to provide deeper insights into text patterns and offer r
 - Jung, J., West, P., Jiang, L., Brahman, F., Lu, X., Fisher, J., Sorensen, T., & Choi, Y. (2023). Impossible Distillation: from Low-Quality Model to High-Quality Dataset & Model for Summarization and Paraphrasing. ArXiv, abs/2305.16635.
 - Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). Attention is All you Need. NIPS.
 - Chawla, N. V., Bowyer, K. W., Hall, L. O., & Kegelmeyer, W. P. (2002). SMOTE: Synthetic Minority Over-sampling Technique. Journal of Artificial Intelligence Research, 16, 321–357. https://doi.org/10.1613/jair.953
+
