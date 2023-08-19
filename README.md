@@ -43,57 +43,20 @@ Before getting into the Project structure and File directories, it is crucial to
 
 ## Data Directory (`data/`)
 - Relevant data files such as baselines (training datasets), and Time-Stratified Random Samples (TSRS) used for training and testing.
-	- `baselines/`
-    - `TSRS/`
-
-## Notebooks (`notebooks/`)
-- Jupyter notebooks for exploratory analysis, sampling, thresholds and performance evaluations. 
-    - `SPT.ipynb`
-    - `performance_evaluations.ipynb`
-    - `classification_pipeline.ipynb`
-    - `classification_baseline.ipynb`
-    
-## Plots (`plots/`)
-- EDA and performance analysis plots.
-
-## Source Files (`srcs/`)
-- Source code files.
-    - `classifier/`
-        - `classifier.py`
-        - `load_classifier.py`
-        - `UCA_trainer.py`
-    - `attention_filtering.py`
-    - `freq_logging.py`
-    - `labeler.py`
-
-## Utils (`utils/`)
-- Directory containing utility scripts and helper functions.
-    - `contraction_mapping.json`
-    - `fnPlots.py`
-    - `fnProcessing.py`
-    - `fnSampling.py`
-    - `fnTesting.py`
-    - `fnUtils.py`
-
-## Configuration and Setup
-- `config.ini`: Configuration file containing various settings and parameters.
-- `Dockerfile`: Dockerfile to build and run the project in a containerized environment.
-- `requirements.txt`: File listing the Python package dependencies required for the project.
-
-## Data Directory (data)
-The data directory includes the following subdirectories with the associated description:
 - `datasets/`: Directory containing the datasets used for training and testing.
     - `baselines/`: Directory containing the original dataset `dialog_dataset.py` and baseline datasets used in performance evaluations.
     - `TSRS/`: Directory containing `Time Stratified Random Samples` that is the data used during development that was sampled from the primary data source
 
-## Notebooks (notebooks)
-The notebooks in this directory provide visualizations and results analysis. The primary notebook is `SPT.ipynb` (Samples, Proportions, and Thresholds), which contains the process used to obtain appropriate samples, proportions, and thresholds used throughout. The `performance_evaluations.ipynb` notebook provides the final performance against various baselines.
+## Notebooks (`notebooks/`)
+The notebooks in this directory provide visualizations and results analysis. The primary notebook is `SPT.ipynb` (Samples, Proportions, and Thresholds), which contains the process used to obtain appropriate samples, proportions, and thresholds used throughout. The `performance_evaluations.ipynb` and `performance_baselines_.ipynb` notebooks provide the final performance against various baselines.
 
-## Source files (srcs)
+## Source files (`srcs/`)
 Contains the main source code files for the project. Summarize each main file below, discussing the methods and intended outcome. 
 
 - `labeler.py` contains the core logic for detecting and labeling dialog in the dataset. It introduces the `DialogDetector` class, which includes various methods to identify dialogs, such as pattern recognition, cosine similarity computations (against training data and `FnWCn logs`), profanity checks, and length thresholds.
 - `FnWCn.py` (Frequency number Word Count number) contains the code for the frequency logging process, dealing with logging high-frequency rows. It works based on dynamically set frequency and word count thresholds, either updating existing files or creating new ones, depending on the specific frequency threshold and word count combination.
+  - Implements a dynamic frequency logging process that identifies rows where text appears more frequently than dynamically determined thresholds.
+  - Utilizes frequency and word count thresholds to log high-frequency rows to separate text files, updating existing files or creating new ones.
 - The `attention_filtering` script clusters and analyzes text documents based on attention values. It utilizes BERT's attention mechanisms, applies KMeans clustering, finds the five-number summary of attention values, and optionally visualizes the clustering in a scatter plot using PCA. It provides insights into the data, such as the spam proportion within each cluster, and enables exploratory data analysis to understand the dataset's structure and dialog distribution (Vaswani et al., 2017).
 - `classifier.py` contains two main components:
     1. **Model Architecture (via the `create_model` function):**
@@ -128,7 +91,7 @@ Contains the main source code files for the project. Summarize each main file be
             - Randomly selects instances from the minority class and duplicates them until the desired balance between the minority and majority classes is achieved (Chawla et al., 2002).
         - Saves the resampled and split data in the specified directory.
 
-## Utils (utils)
+## Utils (`utils/`)
 The files in this directory are commonly found in ML projects. However, the `contraction_mapping.json` file is a distinctive feature which maps contractions to their expanded forms. This serves as a reference file for punctuated text, allowing for its transformation without significant loss of meaning. Additionally, the `fnSampling.py` file is noteworthy as it contains time-stratified random sampling functions essential for providing high-quality and robust data (Almeida & Hidalgo, 2012).
 - `fnPlots` contains various plotting and visualization functions related to date and frequency analysis. It includes functions for plotting histograms, scatter charts, and 3D scatter charts, as well as a class for logging and plotting frequency distributions.
     1. **Frequency Analysis Class**:
@@ -138,13 +101,13 @@ The files in this directory are commonly found in ML projects. However, the `con
     - **`find_dialogs` Function**: Utilizes regular expressions to identify dialog patterns within the data, returning a DataFrame containing 'from' and 'to' thread IDs representing dialog connections.
     - **`augment_dialogs` Function**: Augments dialog data by adding additional information such as original comments, response comments, and corresponding timestamps. It iterates through the replies DataFrame, finding original and response comments, and populating the DataFrame with this information.
 
-## Plots (plots)
+## Plots (`plots/`)
 #### Distributions and samples:
 - [All data, profiled](/plots/profile_all_data.png)
 - [Sample 1](/plots/profile_sampled_sr0.03544_A05P8E01.png)
 - [Sample 2](/plots/profile_sampled_sr0.03544_A05P8E01_2.png)
 - [Sample 3](/plots/profile_sampled_sr0.03544_A05P8E01_3.png)
-- [Sample 4](/plots/profile_sampled_sr0.03544_A05P8E01_3.png)
+- [Sample 4](/plots/profile_sampled_sr0.03544_A05P8E01_4.png)
 - [Attention Clusters](/plots/attention_clusters_A05P8E01_1000ksampled.png)
 - [Top 1% frequent posts visualized with FrequencyLoggerPlotter](/plots/3dFnWCn_top0.01_F5WC1step4.png)
 
@@ -169,15 +132,24 @@ The files in this directory are commonly found in ML projects. However, the `con
 
 ## Configuration and Setup (config.ini)
 Details on how to use `Config.ini`, `Dockerfile`, and `Requirements.txt` for configuring and setting up the project environment.
+- `config.ini`: Configuration file containing various settings and parameters.
+- `Dockerfile`: Dockerfile to build and run the project in a containerized environment.
+- `requirements.txt`: File listing the Python package dependencies required for the project.
 
 ## Collection and Processing
 The data collection and processing for this project were carried out using various scripts and AWS services. All of the 4chan data was collected using the [4chan API](https://github.com/4chan/4chan-API). This API provided access to the threads, posts, and other relevant data from the 4chan platform. The collected data was then processed and cleaned to ensure quality and relevance for the project's objectives. The scripts related to gathering and processing can be found in the referenced repository.
 
-## Use Cases and Future Work
-Future work involves finalizing the narrative tracking feature and generate text to create dynamic training datasets. 
-The example below illustrates the function text_generator.generate(), completing the text generation. 
-- ![Dialog example 1](plots/genpreview1.png)
+## Future Work
+The plan is to refine a transformer-based language model with a custom vocabulary, enhanced with GloVe embeddings. The `TextGenerator` class represents the current state of this effort using row 2 frrom the non-dialog data image above.
 
+The following points provide reasoning for this approach:
+1. Text that appears frequently has a higher probability of being generated, given the appropriate sample.
+2. Generating text from a given prefix or starting string will result in variations of the same text nuances and underlying patterns.
+Row 2 Non-dialog examples
+
+![Row 2 from non-dialog data above](plots/nondialogdata_ex2_gen1.png)
+
+These advancements aim to provide deeper insights into text patterns and offer robust tools for analyzing dialogue dynamics, detecting anomalies, and understanding shifts in discussions over time.
 
 ## References
 - Bird, S., Klein, E., & Loper, E. (2021). Natural Language Processing with Python. In *Natural Language Processing with Python* (3rd ed., ch. 9). O'Reilly Media. Retrieved from https://learning.oreilly.com/library/view/natural-language-processing/9781098136789/ch09.html
@@ -189,4 +161,3 @@ The example below illustrates the function text_generator.generate(), completing
 - Jung, J., West, P., Jiang, L., Brahman, F., Lu, X., Fisher, J., Sorensen, T., & Choi, Y. (2023). Impossible Distillation: from Low-Quality Model to High-Quality Dataset & Model for Summarization and Paraphrasing. ArXiv, abs/2305.16635.
 - Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). Attention is All you Need. NIPS.
 - Chawla, N. V., Bowyer, K. W., Hall, L. O., & Kegelmeyer, W. P. (2002). SMOTE: Synthetic Minority Over-sampling Technique. Journal of Artificial Intelligence Research, 16, 321–357. https://doi.org/10.1613/jair.953
-
