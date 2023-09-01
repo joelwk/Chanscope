@@ -1,5 +1,10 @@
 
 # Project Description
+
+<p align="center">
+  <img src="plots/chanscope.png" alt="Alt text" width="400">
+</p>
+
 The overarching question this project seeks to answer is whether 4chan, despite its controversial reputation, can serve as a potent forum for free and open discussion, offering early insights into significant societal, political, and global phenomena. To assess this, the following project description outlines the machine learning classification pipeline that attempts to categorize text for coherent dialogue. It does this through three distinct steps that employ various machine learning concepts through foundational and novel approaches.
 
 Before getting into the Project structure and File directories, it is crucial to qualify various concepts and definitions used within this project. 
@@ -40,6 +45,10 @@ Before getting into the Project structure and File directories, it is crucial to
 - **FnWC (Frequency Number Word Count Number) Method**: In step 1, FnWC is used for similarity matching, identifying patterns based on frequency and word count, and aligning them with corresponding data clusters. As the data changes, the method dynamically adjusts, enabling efficient clustering and adaptation to evolving data trends. It plays a vital role in pattern recognition and clustering within the dataset.
 
 - **Time-Stratified Random Sampling**: A specific sampling technique used to ensure the quality and robustness of the data, enabling the model to better understand the text's nuances and underlying patterns (Almeida & Hidalgo, 2012).
+
+<p align="center">
+  <img src="plots/methods_1.png" alt="Alt text" width="1500">
+</p>
 
 ## Data Directory (`data/`)
 Relevant data files such as baselines (training datasets), and Time-Stratified Random Samples (TSRS) used for training and testing.
@@ -139,7 +148,7 @@ Details on how to use `Config.ini`, `Dockerfile`, and `Requirements.txt` for con
 The data collection and processing for this project were carried out using various scripts and AWS services. All of the 4chan data was collected using the [4chan API](https://github.com/4chan/4chan-API). This API provided access to the threads, posts, and other relevant data from the 4chan platform. The collected data was then processed and cleaned to ensure quality and relevance for the project's objectives. The scripts related to gathering and processing can be found in the referenced repository.
 
 ## Future Work
-The plan is to refine a transformer-based language model with a custom vocabulary, enhanced with GloVe embeddings. The `TextGenerator` class represents the current state of this effort using row 2 frrom the non-dialog data image above.
+The plan is to refine a transformer-based language model trained on the data collected and enhanced with GloVe embeddings. The `TextGenerator` class represents the current state of this effort using row 2 from the non-dialog data image above. For example, starting with a known word associated with non-dialog data, the word is used to label incoming text; after successful labels, another word is added. This process will continue until some effectiveness criteria are met and the string is added to the training data and timestamped. In addition to becoming training data, it can be referenced to that specific date and time for later analysis. The generator will used for other learning tasks that will be added later.  
 
 The following points provide reasoning for this approach:
 1. Text that appears frequently has a higher probability of being generated, given the appropriate sample.
@@ -147,7 +156,6 @@ The following points provide reasoning for this approach:
 Row 2 Non-dialog examples
 
 ![Row 2 from non-dialog data above](plots/nondialogdata_ex2_gen1.png)
-
 These advancements aim to provide deeper insights into text patterns and offer robust tools for analyzing dialogue dynamics, detecting anomalies, and understanding shifts in discussions over time.
 
 ## References
