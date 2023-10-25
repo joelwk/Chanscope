@@ -156,6 +156,15 @@ The following points provide reasoning for this approach:
 Row 2 Non-dialog examples
 
 ![Row 2 from non-dialog data above](plots/nondialogdata_ex2_gen1.png)
+
+The example below is test output generated from a custom language model trained on 100,000 random dialog pairs. View the Gnerative Modeling repository for more details.
+
+[Generative Modeling](https://github.com/joelwk/Generative-Modeling)
+![Row 2 from non-dialog data above](plots/nondialogdata_ex3_gen2.png)
+
+
+[Generative Modeling](https://github.com/joelwk/Generative-Modeling)
+
 These advancements aim to provide deeper insights into text patterns and offer robust tools for analyzing dialogue dynamics, detecting anomalies, and understanding shifts in discussions over time.
 
 ## References
