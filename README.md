@@ -157,7 +157,7 @@ Row 2 Non-dialog examples
 
 ![Row 2 from non-dialog data above](plots/nondialogdata_ex2_gen1.png)
 
-The example below is test output generated from a custom language model trained on 100,000 random dialog pairs. View the Gnerative Modeling repository for more details.
+The example below is test output generated from a custom language model trained on 100,000 random dialog pairs. View the Generative Modeling repository for more details.
 
 [Generative Modeling](https://github.com/joelwk/Generative-Modeling)
 ![Row 2 from non-dialog data above](plots/nondialogdata_ex3_gen2.png)
